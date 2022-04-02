@@ -7,7 +7,6 @@ import re
 import sys
 
 
-
 #
 # Complete the 'getMaxArea' function below.
 #
@@ -18,51 +17,45 @@ import sys
 #  3. BOOLEAN_ARRAY isVertical
 #  4. INTEGER_ARRAY distance
 #
+import bisect 
 
-class Node:
-    def __init__(self, parent, l, r, op=max):
-        self.parent = parent
-        self.l = l
-        self.r = r
-        self.lc = None
-        self.rc = None
-        self.val = r - l
-        self.op = op
-    
-    def split(self, x):
-        # No balancing, but doesn't seem to give timeouts.
-        assert self.l <= x <= self.r
-        if x == self.l or x == self.r:
-            # Split lies on borders.
-            return
-        if self.lc:
-            if x == self.lc.r:
-                # Split lies on mid split.
-                return
-            if x < self.lc.r:
-                self.lc.split(x)
-            else:
-                self.rc.split(x)
-            self.val = self.op(self.lc.val, self.rc.val)
-        else:
-            self.lc = Node(parent=self, l=self.l, r=x)
-            self.rc = Node(parent=self, l=x, r=self.r)
-            self.val = self.op(x - self.l, self.r - x)
-        
+
 def getMaxArea(w, h, isVertical, distance):
-    w_root = Node(parent=None, l=0, r=w)
-    h_root = Node(parent=None, l=0, r=h)
-    ans = []
-    for iv, d in zip(isVertical, distance):
-        if iv:
-            w_root.split(d)
+    
+    A_w = [0,w]
+    B_h = [0,h]
+    n = len(isVertical)
+    res = []
+    for i in range(n):
+        if isVertical[i] == 0:
+            #B_h.append(distance[i])
+            #B_h.sort()
+            bisect.insort(B_h, distance[i])  # O(N)
         else:
-            h_root.split(d)
-        ans.append(w_root.val * h_root.val)
-    return ans
+            #A_w.append(distance[i])
+            #A_w.sort()
+            bisect.insort(A_w, distance[i])  # O(N)
 
+        diff_h =  0
+        st = B_h[0]
+        for x in B_h:
+            diff_h = max(diff_h, x - st )
+            st = x
+            
+        diff_w =  0
+        st = A_w[0]
+        for x in A_w:
+            diff_w = max(diff_w, x - st )
+            st = x    
+        res.append(diff_h * diff_w)    
+    return res        
+        
+    
+    
+    
+    # Write your code here
 if __name__ == '__main__':
-    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    #fptr = open(os.environ['OUTPUT_PATH'], 'w')
 
     w = int(input().strip())
 
@@ -85,8 +78,8 @@ if __name__ == '__main__':
         distance.append(distance_item)
 
     result = getMaxArea(w, h, isVertical, distance)
+    print( '\n'.join(map(str, result)  ))
+    #fptr.write('\n'.join(map(str, result)))
+    #fptr.write('\n')
 
-    fptr.write('\n'.join(map(str, result)))
-    fptr.write('\n')
-
-    fptr.close()
+    #fptr.close()
